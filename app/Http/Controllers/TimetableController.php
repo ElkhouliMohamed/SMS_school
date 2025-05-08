@@ -14,11 +14,21 @@ class TimetableController extends Controller
     public function __construct()
     {
         $this->middleware(['role:admin|teacher']);
+        $this->middleware('role:student|guardian')->only(['index']);
     }
 
     public function index()
     {
-        $timetables = Timetable::with(['schoolClass', 'subject', 'teacher'])->paginate(10);
+        if (auth()->user()->hasRole('student')) {
+            $studentClassId = auth()->user()->student->class_id;
+            $timetables = Timetable::with(['schoolClass', 'subject', 'teacher'])
+                ->where('school_class_id', $studentClassId)
+                ->paginate(10);
+        } else {
+            // For admin, teacher, or guardian, show all timetables
+            $timetables = Timetable::with(['schoolClass', 'subject', 'teacher'])->paginate(10);
+        }
+
         return view('timetables.index', compact('timetables'));
     }
 

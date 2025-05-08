@@ -11,13 +11,22 @@ class GradeController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['role:admin|teacher']);
+        $this->middleware('auth');
+        $this->middleware('role:student|guardian')->only(['index']);
     }
 
     public function index()
     {
-        
-        $grades = Grade::with(['student', 'subject'])->paginate(10);
+        if (auth()->user()->hasRole('student')) {
+            // If the user is a student, show only their grades
+            $grades = Grade::with(['student', 'subject'])
+                ->where('student_id', auth()->user()->student->id)
+                ->paginate(10);
+        } else {
+            // For admin or teacher, show all grades
+            $grades = Grade::with(['student', 'subject'])->paginate(10);
+        }
+
         return view('grades.index', compact('grades'));
     }
 
