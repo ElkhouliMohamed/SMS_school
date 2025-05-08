@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Controllers\AbsenceController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventPaymentController;
+use App\Http\Controllers\EventRegistrationController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
@@ -13,8 +17,6 @@ use App\Http\Controllers\GuardianController;
 use App\Http\Controllers\TimetableController;
 use App\Http\Controllers\TransportController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 Route::get('/', function () {
     return view('welcome');
@@ -51,6 +53,7 @@ Route::middleware('auth')->group(function () {
 
     // Timetables
     Route::resource('timetables', TimetableController::class);
+    Route::get('timetables-calendar', [TimetableController::class, 'calendar'])->name('timetables.calendar');
 
     // Transports
     Route::resource('transports', TransportController::class);
@@ -66,6 +69,25 @@ Route::post('transports/{transport}/assign-students', [TransportController::clas
 
     // Payments
     Route::resource('payments', PaymentController::class);
+
+    // Absences
+    Route::resource('absences', AbsenceController::class);
+
+    // Events
+    Route::resource('events', EventController::class);
+    Route::get('events-calendar', [EventController::class, 'calendar'])->name('events.calendar');
+    Route::get('events-simple-calendar', [EventController::class, 'simpleCalendar'])->name('events.simple_calendar');
+
+    // Event Registrations
+    Route::get('event-registrations', [EventRegistrationController::class, 'index'])->name('event_registrations.index');
+    Route::get('event-registrations/{registration}', [EventRegistrationController::class, 'show'])->name('event_registrations.show');
+    Route::post('events/{event}/register', [EventRegistrationController::class, 'register'])->name('events.register');
+    Route::post('event-registrations/{registration}/cancel', [EventRegistrationController::class, 'cancel'])->name('event_registrations.cancel');
+    Route::post('event-registrations/{registration}/mark-attended', [EventRegistrationController::class, 'markAttended'])->name('event_registrations.mark_attended');
+
+    // Event Payments
+    Route::resource('event_payments', EventPaymentController::class)->except(['edit', 'update', 'destroy']);
+    Route::get('event_payments/{eventPayment}/invoice', [EventPaymentController::class, 'generateInvoice'])->name('event_payments.invoice');
 });
 
 require __DIR__.'/auth.php';

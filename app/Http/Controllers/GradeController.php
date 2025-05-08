@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Grade;
 use App\Models\Student;
 use App\Models\Subject;
+use App\Models\Teacher;
+use App\Models\Guardian;
 use Illuminate\Http\Request;
 
 class GradeController extends Controller
@@ -12,18 +14,35 @@ class GradeController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        $this->middleware('role:student|guardian')->only(['index']);
+        $this->middleware('role:admin|teacher|student|guardian');
     }
 
     public function index()
     {
-        if (auth()->user()->hasRole('student')) {
+        $user = auth()->user();
+
+        if ($user->hasRole('student')) {
             // If the user is a student, show only their grades
+            $student = Student::where('user_id', $user->id)->first();
             $grades = Grade::with(['student', 'subject'])
-                ->where('student_id', auth()->user()->student->id)
+                ->where('student_id', $student ? $student->id : 0)
+                ->paginate(10);
+        } elseif ($user->hasRole('guardian')) {
+            // If the user is a guardian, show only their wards' grades
+            $guardian = Guardian::where('user_id', $user->id)->first();
+            $wardIds = $guardian ? $guardian->students->pluck('id')->toArray() : [];
+            $grades = Grade::with(['student', 'subject'])
+                ->whereIn('student_id', $wardIds)
+                ->paginate(10);
+        } elseif ($user->hasRole('teacher')) {
+            // If the user is a teacher, show grades for subjects they teach
+            $teacher = Teacher::where('user_id', $user->id)->first();
+            $teacherSubjectIds = $teacher ? $teacher->subjects->pluck('id')->toArray() : [];
+            $grades = Grade::with(['student', 'subject'])
+                ->whereIn('subject_id', $teacherSubjectIds)
                 ->paginate(10);
         } else {
-            // For admin or teacher, show all grades
+            // For admin, show all grades
             $grades = Grade::with(['student', 'subject'])->paginate(10);
         }
 

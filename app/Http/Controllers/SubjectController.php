@@ -38,9 +38,9 @@ class SubjectController extends Controller
 
         try {
             Subject::create($validated);
-            return redirect()->route('subjects.index')->with('success', 'Subject created successfully.');
+            return redirect()->route('subjects.index')->with('success', 'Matière créée avec succès.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to create subject: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Échec de la création de la matière : ' . $e->getMessage()]);
         }
     }
 
@@ -68,9 +68,9 @@ class SubjectController extends Controller
 
         try {
             $subject->update($validated);
-            return redirect()->route('subjects.index')->with('success', 'Subject updated successfully.');
+            return redirect()->route('subjects.index')->with('success', 'Matière mise à jour avec succès.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to update subject: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Échec de la mise à jour de la matière : ' . $e->getMessage()]);
         }
     }
 
@@ -78,9 +78,9 @@ class SubjectController extends Controller
     {
         try {
             $subject->delete();
-            return redirect()->route('subjects.index')->with('success', 'Subject deleted successfully.');
+            return redirect()->route('subjects.index')->with('success', 'Matière supprimée avec succès.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to delete subject: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Échec de la suppression de la matière : ' . $e->getMessage()]);
         }
     }
 }

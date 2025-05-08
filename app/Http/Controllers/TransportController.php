@@ -27,10 +27,9 @@ class TransportController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'vehicle_number' => 'required|string|max:255|unique:transports',
+            'vehicle_number' => 'required|string|max:50|unique:transports',
             'driver_name' => 'required|string|max:255',
-            'route' => 'required|string|max:255',
-            'capacity' => 'required|integer|min:1',
+            'route_description' => 'required|string',
         ]);
 
         try {
@@ -55,10 +54,9 @@ class TransportController extends Controller
     public function update(Request $request, Transport $transport)
     {
         $validated = $request->validate([
-            'vehicle_number' => 'required|string|max:255|unique:transports,vehicle_number,' . $transport->id,
+            'vehicle_number' => 'required|string|max:50|unique:transports,vehicle_number,' . $transport->id,
             'driver_name' => 'required|string|max:255',
-            'route' => 'required|string|max:255',
-            'capacity' => 'required|integer|min:1',
+            'route_description' => 'required|string',
         ]);
 
         try {

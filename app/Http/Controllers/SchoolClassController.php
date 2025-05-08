@@ -42,9 +42,9 @@ class SchoolClassController extends Controller
             if (!empty($validated['teacher_ids'])) {
                 $class->teachers()->sync($validated['teacher_ids']);
             }
-            return redirect()->route('school_classes.index')->with('success', 'Class created successfully.');
+            return redirect()->route('school_classes.index')->with('success', 'Classe créée avec succès.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to create class: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Échec de la création de la classe : ' . $e->getMessage()]);
         }
     }
 
@@ -74,9 +74,9 @@ class SchoolClassController extends Controller
         try {
             $schoolClass->update($validated);
             $schoolClass->teachers()->sync($validated['teacher_ids'] ?? []);
-            return redirect()->route('school_classes.index')->with('success', 'Class updated successfully.');
+            return redirect()->route('school_classes.index')->with('success', 'Classe mise à jour avec succès.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to update class: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Échec de la mise à jour de la classe : ' . $e->getMessage()]);
         }
     }
 
@@ -84,9 +84,9 @@ class SchoolClassController extends Controller
     {
         try {
             $schoolClass->delete();
-            return redirect()->route('school_classes.index')->with('success', 'Class deleted successfully.');
+            return redirect()->route('school_classes.index')->with('success', 'Classe supprimée avec succès.');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Failed to delete class: ' . $e->getMessage()]);
+            return back()->withErrors(['error' => 'Échec de la suppression de la classe : ' . $e->getMessage()]);
         }
     }
 }

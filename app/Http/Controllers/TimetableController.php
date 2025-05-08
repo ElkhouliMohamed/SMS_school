@@ -6,6 +6,7 @@ use App\Models\Timetable;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Teacher;
+use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -13,19 +14,33 @@ class TimetableController extends Controller
 {
     public function __construct()
     {
-        $this->middleware(['role:admin|teacher']);
-        $this->middleware('role:student|guardian')->only(['index']);
+        $this->middleware("auth");
+        $this->middleware(['role:admin|teacher|student|guardian'])->only(['index', 'show', 'calendar']);
     }
 
     public function index()
     {
-        if (auth()->user()->hasRole('student')) {
-            $studentClassId = auth()->user()->student->class_id;
+        $user = auth()->user();
+
+        if ($user->hasRole('student')) {
+            // If the user is a student, show only their class timetables
+            $student = Student::where('user_id', $user->id)->first();
+            $studentClassId = $student ? $student->school_class_id : 0;
             $timetables = Timetable::with(['schoolClass', 'subject', 'teacher'])
                 ->where('school_class_id', $studentClassId)
                 ->paginate(10);
+        } elseif ($user->hasRole('teacher')) {
+            // If the user is a teacher, show timetables for classes they teach
+            $teacher = Teacher::where('user_id', $user->id)->first();
+            if ($teacher) {
+                $timetables = Timetable::with(['schoolClass', 'subject', 'teacher'])
+                    ->where('teacher_id', $teacher->id)
+                    ->paginate(10);
+            } else {
+                $timetables = Timetable::with(['schoolClass', 'subject', 'teacher'])->paginate(10);
+            }
         } else {
-            // For admin, teacher, or guardian, show all timetables
+            // For admin or guardian, show all timetables
             $timetables = Timetable::with(['schoolClass', 'subject', 'teacher'])->paginate(10);
         }
 
@@ -174,5 +189,81 @@ class TimetableController extends Controller
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Failed to delete timetable entry: ' . $e->getMessage()]);
         }
+    }
+
+    public function calendar(Request $request)
+    {
+        $user = auth()->user();
+        $selectedClassId = $request->input('class_id');
+        $classes = SchoolClass::all();
+
+        // Get timetables based on user role and selected class
+        if ($selectedClassId) {
+            $timetables = Timetable::with(['schoolClass', 'subject', 'teacher'])
+                ->where('school_class_id', $selectedClassId)
+                ->get();
+        } elseif ($user->hasRole('student')) {
+            $student = Student::where('user_id', $user->id)->first();
+            $studentClassId = $student ? $student->school_class_id : 0;
+            $timetables = Timetable::with(['schoolClass', 'subject', 'teacher'])
+                ->where('school_class_id', $studentClassId)
+                ->get();
+            $selectedClassId = $studentClassId;
+        } elseif ($user->hasRole('teacher')) {
+            $teacher = Teacher::where('user_id', $user->id)->first();
+            if ($teacher) {
+                $timetables = Timetable::with(['schoolClass', 'subject', 'teacher'])
+                    ->where('teacher_id', $teacher->id)
+                    ->get();
+            } else {
+                $timetables = Timetable::with(['schoolClass', 'subject', 'teacher'])->get();
+            }
+        } else {
+            // For admin or guardian, show all timetables if no class is selected
+            $timetables = $selectedClassId
+                ? Timetable::with(['schoolClass', 'subject', 'teacher'])->where('school_class_id', $selectedClassId)->get()
+                : Timetable::with(['schoolClass', 'subject', 'teacher'])->get();
+        }
+
+        // Organize timetables by day and time for the calendar view
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        $timeSlots = $this->generateTimeSlots();
+        $calendarData = [];
+
+        foreach ($days as $day) {
+            $calendarData[$day] = [];
+            foreach ($timeSlots as $timeSlot) {
+                $calendarData[$day][$timeSlot] = null;
+            }
+        }
+
+        foreach ($timetables as $timetable) {
+            $startTime = $timetable->start_time->format('H:i');
+            $endTime = $timetable->end_time->format('H:i');
+
+            // Find the closest time slot
+            foreach ($timeSlots as $timeSlot) {
+                if ($startTime <= $timeSlot && $endTime > $timeSlot) {
+                    $calendarData[$timetable->day][$timeSlot] = $timetable;
+                    break;
+                }
+            }
+        }
+
+        return view('timetables.calendar', compact('calendarData', 'days', 'timeSlots', 'classes', 'selectedClassId'));
+    }
+
+    private function generateTimeSlots()
+    {
+        $timeSlots = [];
+        $startHour = 8; // 8 AM
+        $endHour = 18;  // 6 PM
+
+        for ($hour = $startHour; $hour < $endHour; $hour++) {
+            $timeSlots[] = sprintf('%02d:00', $hour);
+            $timeSlots[] = sprintf('%02d:30', $hour);
+        }
+
+        return $timeSlots;
     }
 }

@@ -1,56 +1,141 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1 class="text-2xl font-bold mb-4">Edit Teacher</h1>
-    <form action="{{ route('teachers.update', $teacher) }}" method="POST" class="max-w-lg">
-        @csrf
-        @method('PUT')
-        <div class="mb-4">
-            <label for="first_name" class="block text-gray-700">First Name</label>
-            <input type="text" name="first_name" id="first_name" class="w-full border rounded p-2" value="{{ old('first_name', $teacher->first_name) }}">
-            @error('first_name')
-                <p class="text-red-500 text-sm">{{ $message }}</p>
-            @enderror
+<div class="container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Modifier l'Enseignant</h1>
+            <p class="text-gray-600 mt-2">Mettre à jour les informations de l'enseignant</p>
         </div>
-        <div class="mb-4">
-            <label for="last_name" class="block text-gray-700">Last Name</label>
-            <input type="text" name="last_name" id="last_name" class="w-full border rounded p-2" value="{{ old('last_name', $teacher->last_name) }}">
-            @error('last_name')
-                <p class="text-red-500 text-sm">{{ $message }}</p>
-            @enderror
+        <div class="flex space-x-2">
+            <a href="{{ route('teachers.show', $teacher) }}" class="flex items-center bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Voir les détails
+            </a>
+            <a href="{{ route('teachers.index') }}" class="flex items-center bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Retour à la liste
+            </a>
         </div>
-        <div class="mb-4">
-            <label for="email" class="block text-gray-700">Email</label>
-            <input type="email" name="email" id="email" class="w-full border rounded p-2" value="{{ old('email', $teacher->email) }}">
-            @error('email')
-                <p class="text-red-500 text-sm">{{ $message }}</p>
-            @enderror
+    </div>
+
+    @if ($errors->any())
+    <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">Veuillez corriger les erreurs suivantes:</h3>
+                <ul class="mt-1 text-sm text-red-700 list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
         </div>
-        <div class="mb-4">
-            <label for="phone" class="block text-gray-700">Phone</label>
-            <input type="text" name="phone" id="phone" class="w-full border rounded p-2" value="{{ old('phone', $teacher->phone) }}">
-            @error('phone')
-                <p class="text-red-500 text-sm">{{ $message }}</p>
-            @enderror
-        </div>
-        <div class="mb-4">
-            <label for="address" class="block text-gray-700">Address</label>
-            <input type="text" name="address" id="address" class="w-full border rounded p-2" value="{{ old('address', $teacher->address) }}">
-            @error('address')
-                <p class="text-red-500 text-sm">{{ $message }}</p>
-            @enderror
-        </div>
-        <div class="mb-4">
-            <label for="password" class="block text-gray-700">Password (leave blank to keep current)</label>
-            <input type="password" name="password" id="password" class="w-full border rounded p-2">
-            @error('password')
-                <p class="text-red-500 text-sm">{{ $message }}</p>
-            @enderror
-        </div>
-        <div class="mb-4">
-            <label for="password_confirmation" class="block text-gray-700">Confirm Password</label>
-            <input type="password" name="password_confirmation" id="password_confirmation" class="w-full border rounded p-2">
-        </div>
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Update Teacher</button>
-    </form>
+    </div>
+    @endif
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <form action="{{ route('teachers.update', $teacher) }}" method="POST">
+            @csrf
+            @method('PUT')
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Informations Personnelles -->
+                <div class="md:col-span-2">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b">Informations Personnelles</h2>
+                </div>
+
+                <!-- Prénom -->
+                <div>
+                    <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+                    <input type="text" name="first_name" id="first_name" value="{{ old('first_name', $teacher->first_name) }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                    @error('first_name')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Nom -->
+                <div>
+                    <label for="last_name" class="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                    <input type="text" name="last_name" id="last_name" value="{{ old('last_name', $teacher->last_name) }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                    @error('last_name')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Informations de Contact -->
+                <div class="md:col-span-2">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b mt-4">Informations de Contact</h2>
+                </div>
+
+                <!-- Email -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" name="email" id="email" value="{{ old('email', $teacher->email) }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required>
+                    @error('email')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Téléphone -->
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Téléphone (Optionnel)</label>
+                    <input type="text" name="phone" id="phone" value="{{ old('phone', $teacher->phone) }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('phone')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Adresse -->
+                <div class="md:col-span-2">
+                    <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Adresse (Optionnel)</label>
+                    <textarea name="address" id="address" rows="3" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">{{ old('address', $teacher->address) }}</textarea>
+                    @error('address')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Informations de Connexion -->
+                <div class="md:col-span-2">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b mt-4">Informations de Connexion</h2>
+                    <p class="text-sm text-gray-500 mb-4">Laissez les champs vides pour conserver le mot de passe actuel</p>
+                </div>
+
+                <!-- Mot de passe -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe</label>
+                    <input type="password" name="password" id="password" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    @error('password')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Confirmation du mot de passe -->
+                <div>
+                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Confirmer le mot de passe</label>
+                    <input type="password" name="password_confirmation" id="password_confirmation" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 mt-6 pt-4 border-t">
+                <a href="{{ route('teachers.index') }}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 transition duration-200">Annuler</a>
+                <button type="submit" class="bg-yellow-500 text-white px-6 py-2 rounded-md hover:bg-yellow-600 transition duration-200 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Mettre à jour
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection
